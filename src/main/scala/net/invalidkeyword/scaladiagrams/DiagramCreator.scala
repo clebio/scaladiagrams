@@ -1,28 +1,28 @@
 package net.invalidkeyword.scaladiagrams
 
 import java.io.File
-import org.rogach.scallop._
-import java.io.OutputStream
-import java.io.OutputStreamWriter
 
-object DiagramCreator { 
-  
+import org.rogach.scallop._
+
+object DiagramCreator {
+
   def main(args:Array[String]) = {
     outputDot(selectNodes(args))
   }
-  
+
   def selectNodes(args : Array[String]) : Iterable[TYPE]= {
     object Config extends ScallopConf(args) {
       val extension = opt[String]("extension", default=Some(".scala"))
       val source = opt[String]("source", default=Some("."), descr = "location of source files")
       val linked = opt[Boolean]("linked", descr = "only output types that extend other types")
       val parent = opt[String]("parent", descr = "only output parents of a particular class")
+      val exclude = opt[String]("exclude", default=Some(""), descr = "substring of filenames to exclude, e.g. 'Spec'")
     }
-    
-    val files = new InputFinder().files(Config.source(),Config.extension())
+
+    val files = new InputFinder().files(Config.source(),Config.extension(),Config.exclude())
     val allNodes = getNodesFromFiles(files)
     val ns = new NodeSelector(allNodes)
-    
+
     if(!Config.parent.isEmpty)
       parentNodes(ns,Config.parent())
     else if(Config.linked())
